@@ -9,7 +9,7 @@ namespace Algorithm
     class MyList<T>
     {
         const int DEFAULT_SIZE = 1;
-        T[] _data = new T[DEFAULT_SIZE];
+        T?[] _data = new T[DEFAULT_SIZE];
 
         public int Count = 0; // 실제로 사용중인 데이터 개수
         public int Capacity { get { return _data.Length; } } // 예약된 데이터 개수
@@ -25,7 +25,7 @@ namespace Algorithm
 
                 for (int i = 0; i < Count; i++)
                 {
-                    newArray[i] = _data[i];
+                    newArray[i] = _data[i]!;
                 }
                 _data = newArray;
             }
@@ -40,7 +40,7 @@ namespace Algorithm
         // O(1)
         public T this[int index]
         {
-            get { return _data[index]; }
+            get { return _data[index]!; }
             set { _data[index] = value; }
         }
 
@@ -54,11 +54,70 @@ namespace Algorithm
 
             // T타입의 초기값으로 대입 (값타입이면 0, 참조타입이면 null)
             _data[Count - 1] = default(T);
+
             Count--;
         }
     }
 
+    class MyLinkedList<T>
+    {
+        public MyNode<T>? Head;
+        public MyNode<T>? Tail;
+        public int Count;
 
+        // O(1)
+        public MyNode<T> AddLast(T data)
+        {
+            MyNode<T> newNode = new MyNode<T>();
+            newNode.Data = data;
+
+            // Head 없을 경우
+            if(Head == null)
+                Head = newNode;
+
+            // Tail 존재할 경우
+            if(Tail != null)
+            {
+                Tail.Next = newNode;
+                newNode.Prev = Tail;
+            }
+
+            Tail = newNode;
+            Count++;
+
+            return newNode;
+        }
+        
+        // O(1)
+        public void Remove(MyNode<T> node)
+        {
+            // 삭제할 노드가 Head일 경우
+            if (Head == node)
+                Head = Head.Next;
+
+            // 삭제할 노드가 Tail일 경우
+            if (Tail == node)
+                Tail = Tail.Prev;
+
+            if(node.Prev != null)
+            {
+                node.Prev.Next = node.Next;
+            }
+
+            if(node.Next != null)
+            {
+                node.Next.Prev = node.Prev;
+            }
+
+            Count--;
+        }
+    }
+    class MyNode<T>
+    {
+        public T? Data;
+        public MyNode<T>? Next;
+        public MyNode<T>? Prev;
+    }
 
     class Board
     {
@@ -66,11 +125,16 @@ namespace Algorithm
         //public List<int> _data2 = new List<int>(); //동적배열
         public MyList<int> _data2 = new MyList<int>();
 
-        public LinkedList<int> _data3 = new LinkedList<int>(); //연결리스트
+        //public LinkedList<int> _data3 = new LinkedList<int>(); //연결리스트
+        public MyLinkedList<int> _data3 = new MyLinkedList<int>();
 
         public void Initalize()
         {
-           
+            _data3.AddLast(101);
+            _data3.AddLast(102);
+            _data3.AddLast(103);
+            _data3.AddLast(104);
+            _data3.AddLast(105);
         }
     }
 }
