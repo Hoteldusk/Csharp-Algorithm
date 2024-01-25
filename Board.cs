@@ -6,135 +6,111 @@ using System.Threading.Tasks;
 
 namespace Algorithm
 {   
-    class MyList<T>
-    {
-        const int DEFAULT_SIZE = 1;
-        T?[] _data = new T[DEFAULT_SIZE];
-
-        public int Count = 0; // 실제로 사용중인 데이터 개수
-        public int Capacity { get { return _data.Length; } } // 예약된 데이터 개수
-
-        // O(1) 예외케이스 : 이사 비용은 무시한다 (항상 크기가 부족하여 반복문이 실행되지는 않기 때문에)
-        public void Add(T item)
-        {
-            // 1. 공간이 충분히 남아있는지 확인
-            if(Count >= Capacity)
-            {
-                // 공간을 다시 늘려서 확보한다
-                T[] newArray = new T[Count * 2];
-
-                for (int i = 0; i < Count; i++)
-                {
-                    newArray[i] = _data[i]!;
-                }
-                _data = newArray;
-            }
-
-            // 2. 공간에 데이터를 넣어준다
-            _data[Count] = item;
-            Count++;
-        }
-
-
-        // 인덱서
-        // O(1)
-        public T this[int index]
-        {
-            get { return _data[index]!; }
-            set { _data[index] = value; }
-        }
-
-        // O(N)
-        public void RemoveAt(int index)
-        {
-            for(int i = index; i < Count - 1;  i++)
-            {
-                _data[i] = _data[i + 1];
-            }
-
-            // T타입의 초기값으로 대입 (값타입이면 0, 참조타입이면 null)
-            _data[Count - 1] = default(T);
-
-            Count--;
-        }
-    }
-
-    class MyLinkedList<T>
-    {
-        public MyNode<T>? Head;
-        public MyNode<T>? Tail;
-        public int Count;
-
-        // O(1)
-        public MyNode<T> AddLast(T data)
-        {
-            MyNode<T> newNode = new MyNode<T>();
-            newNode.Data = data;
-
-            // Head 없을 경우
-            if(Head == null)
-                Head = newNode;
-
-            // Tail 존재할 경우
-            if(Tail != null)
-            {
-                Tail.Next = newNode;
-                newNode.Prev = Tail;
-            }
-
-            Tail = newNode;
-            Count++;
-
-            return newNode;
-        }
-        
-        // O(1)
-        public void Remove(MyNode<T> node)
-        {
-            // 삭제할 노드가 Head일 경우
-            if (Head == node)
-                Head = Head.Next;
-
-            // 삭제할 노드가 Tail일 경우
-            if (Tail == node)
-                Tail = Tail.Prev;
-
-            if(node.Prev != null)
-            {
-                node.Prev.Next = node.Next;
-            }
-
-            if(node.Next != null)
-            {
-                node.Next.Prev = node.Prev;
-            }
-
-            Count--;
-        }
-    }
-    class MyNode<T>
-    {
-        public T? Data;
-        public MyNode<T>? Next;
-        public MyNode<T>? Prev;
-    }
-
     class Board
     {
-        public int[] _data = new int[25]; //배열
-        //public List<int> _data2 = new List<int>(); //동적배열
-        public MyList<int> _data2 = new MyList<int>();
+        const char CIRCLE = '\u25cf';
+        public TileType[,]? _tile; // 배열
+        public int _size;
 
-        //public LinkedList<int> _data3 = new LinkedList<int>(); //연결리스트
-        public MyLinkedList<int> _data3 = new MyLinkedList<int>();
-
-        public void Initalize()
+        public enum TileType
         {
-            _data3.AddLast(101);
-            _data3.AddLast(102);
-            _data3.AddLast(103);
-            _data3.AddLast(104);
-            _data3.AddLast(105);
+            Empty,
+            Wall,
+        }
+
+        public void Initalize(int size)
+        {
+            if (size % 2 == 0)
+                return;
+
+            _tile = new TileType[size, size];
+            _size = size;
+
+
+            // 길을 막는 부분
+            for (int y = 0; y < _size; y++)
+            {
+                for (int x = 0; x < _size; x++)
+                {
+                    if (x % 2 == 0 || y % 2 == 0)
+                        _tile[y, x] = TileType.Wall;
+                    else
+                        _tile[y, x] = TileType.Empty;
+                }
+            }
+
+            GeneratedByBinaryTree();
+        }
+
+        private void GeneratedByBinaryTree()
+        {
+            // 랜덤으로 우측 혹은 아래로 길을 뚫는 부분
+            // Binary Tree Algorithm
+            Random rand = new Random();
+            for (int y = 0; y < _size; y++)
+            {
+                for (int x = 0; x < _size; x++)
+                {
+                    if (x % 2 == 0 || y % 2 == 0)
+                        continue;
+
+                    if (y == _size - 2 && x == _size - 2)
+                    {
+                        continue;
+                    }
+
+                    if (y == _size - 2)
+                    {
+                        _tile![y, x + 1] = TileType.Empty;
+                        continue;
+                    }
+
+                    if (x == _size - 2)
+                    {
+                        _tile![y + 1, x] = TileType.Empty;
+                        continue;
+                    }
+
+                    if (rand.Next(0, 2) == 0)
+                    {
+                        _tile![y, x + 1] = TileType.Empty;
+                    }
+                    else
+                    {
+                        _tile![y + 1, x] = TileType.Empty;
+                    }
+                }
+            }
+        }
+
+        public void Render()
+        {
+            ConsoleColor prevColor = Console.ForegroundColor;
+            for (int y = 0; y < _size; y++)
+            {
+                for (int x = 0; x < _size; x++)
+                {
+                    Console.ForegroundColor = GetTileColor(_tile![y, x]);
+                    Console.Write(CIRCLE);
+                }
+                Console.WriteLine();
+            }
+            Console.ForegroundColor= prevColor;
+        }
+
+        private ConsoleColor GetTileColor(TileType type)
+        {
+            switch(type)
+            {
+                case TileType.Empty:
+                    return ConsoleColor.Green;
+
+                case TileType.Wall:
+                    return ConsoleColor.Red;
+
+                default:
+                    return ConsoleColor.Green;
+            }
         }
     }
 }
