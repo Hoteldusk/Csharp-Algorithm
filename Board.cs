@@ -39,7 +39,54 @@ namespace Algorithm
                 }
             }
 
-            GeneratedByBinaryTree();
+            GeneratedBySideWinder();
+        }
+
+        private void GeneratedBySideWinder()
+        {
+            // 랜덤으로 우측 혹은 아래로 길을 뚫는 부분
+            // SideWinder Algorithm
+            Random rand = new Random();
+            for (int y = 0; y < _size; y++)
+            {
+                int count = 1;
+
+                for (int x = 0; x < _size; x++)
+                {
+                    if (x % 2 == 0 || y % 2 == 0)
+                        continue;
+
+                    if (y == _size - 2 && x == _size - 2)
+                    {
+                        continue;
+                    }
+
+                    if (y == _size - 2)
+                    {
+                        _tile![y, x + 1] = TileType.Empty;
+                        continue;
+                    }
+
+                    if (x == _size - 2)
+                    {
+                        _tile![y + 1, x] = TileType.Empty;
+                        continue;
+                    }
+
+                    // 차이점 : 뚫어놓은 x들중에서 랜덤으로 선택해 아래로 뚫는다
+                    if (rand.Next(0, 2) == 0)
+                    {
+                        _tile![y, x + 1] = TileType.Empty;
+                        count++;
+                    }
+                    else
+                    {
+                        int randomIndex = rand.Next(0, count);
+                        _tile![y + 1, x - randomIndex * 2] = TileType.Empty;
+                        count = 1;
+                    }
+                }
+            }
         }
 
         private void GeneratedByBinaryTree()
